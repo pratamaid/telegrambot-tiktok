@@ -1,7 +1,7 @@
 # TikTok Downloader
 
 Telegram Bot for downloading video from TikTok without watermark.
-Can download 1 video or in the form of a list.
+This Bot can download 1 or batch video.
 
 ## Bot Usage
 1. Clone repository
