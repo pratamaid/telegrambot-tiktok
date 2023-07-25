@@ -31,7 +31,6 @@ headers = {
 
 def fetch_video_id(url):
     response = requests.get(url, headers=headers)
-    print(response)
     soup = BeautifulSoup(response.text, 'html.parser')
     link = soup.find('link', {'rel': 'canonical'}).attrs['href']
     video_id = link.split('/')[-1:][0]
@@ -57,14 +56,14 @@ async def send_welcome(message: types.Message):
     await message.reply(f'Selamat datang, {message.chat.first_name}!\n\nAnda dapat memulai dengan klik /download atau /list \n'
                         f'Maka video anda akan saya Download!\n\nSaat ini, saya mendukung '
                         f'hanya video dari TikTok!')
-    btn1 = InlineKeyboardButton('⬇️ Download', '/download')
-    btn2 = InlineKeyboardButton('📚 List', '/list')
+    btn1 = InlineKeyboardButton('/download', '/download')
+    btn2 = InlineKeyboardButton('/list', '/list')
     markup4 = ReplyKeyboardMarkup(resize_keyboard=True).row(
         btn1, btn2
     )
     await message.answer('Pilih',reply_markup=markup4)
 
-@dp.message_handler(commands=['list', 'List', '📚 List'])
+@dp.message_handler(commands=['list', 'List'])
 async def send_list(message: types.Message, state: FSMContext):
     await Form.name.set()
     await message.reply(f'📚 Kirim List Video Tiktok :\n'
@@ -75,17 +74,21 @@ async def process_name(message: types.Message, state: FSMContext):
     await state.finish()
     await message.reply(f"Hello, {message.chat.first_name}!\nMohon tunggu sebentar 😊")
     video_list = message.text.split('\n')
-    counter = 0
+    counter = 1
     while counter <= len(video_list):
-        video_detail = download_video(video_list[counter])
+        video_detail = download_video(video_list[counter - 1])
         await message.reply_video(video_detail[0], caption=f'📹Username: <a href="https://www.tiktok.com/@{video_detail[1]}">@{video_detail[1]}</a>\n❤️Like: {video_detail[2]}\n🔗Link: <a href="{video_detail[0]}">Link</a>\nSaya senang bisa membantu! @unduhtiktokbot',parse_mode=ParseMode.HTML)
-        print(Fore.GREEN + '[+] Finish Downloading '+ str(video_detail[3]))
-        counter = counter + 1
+        print(Fore.GREEN + '[+] Finish Downloading '+ 'https://www.tiktok.com/@' + str(video_detail[1]) +'/video/' + str(video_detail[3]))
+        if counter == len(video_list):
+            print(Fore.GREEN + '[+] Finish Downloading All Video')
+            break
+        else:
+            counter = counter + 1
     else:
         await message.answer('⛔️ Anda mengirim tautan yang tidak didukung oleh bot!\nKetik /help untuk bantuan')
-        print(Fore.RED + '[-] Downloading Error '+ str(video_detail[3]))
+        print(Fore.RED + '[-] Downloading Error '+ 'https://www.tiktok.com/@' + str(video_detail[1]) +'/video/' + str(video_detail[3]))
 
-@dp.message_handler(commands=['download', 'Download', '⬇️ Download'])
+@dp.message_handler(commands=['download', 'Download'])
 async def send_video(message: types.Message):
     await download.name.set()
     await message.reply(f'🔗 Kirim Link Video Tiktok :')
@@ -96,10 +99,10 @@ async def process_name(message: types.Message, state: FSMContext):
     if re.compile('https://[a-zA-Z]+.tiktok.com/').match(message.text):
         video_detail = download_video(message.text)
         await message.reply_video(video_detail[0], caption=f'📹Username: <a href="https://www.tiktok.com/@{video_detail[1]}">@{video_detail[1]}</a>\n❤️Like: {video_detail[2]}\n🔗Link: <a href="{video_detail[0]}">Link</a>\nSaya senang bisa membantu! @unduhtiktokbot',parse_mode=ParseMode.HTML)
-        print(Fore.GREEN + '[+] Finish Downloading '+ str(video_detail[3]))
+        print(Fore.GREEN + '[+] Finish Downloading '+ 'https://www.tiktok.com/@' + str(video_detail[1]) +'/video/' + str(video_detail[3]))
     else:
         await message.answer('⛔️ Anda mengirim tautan yang tidak didukung oleh bot!\nKetik /help untuk bantuan')
-        print(Fore.RED + '[-] Downloading Error '+ str(video_detail[3]))
+        print(Fore.RED + '[-] Downloading Error '+ 'https://www.tiktok.com/@' + str(video_detail[1]) +'/video/' + str(video_detail[3]))
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
